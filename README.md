@@ -8,7 +8,9 @@ VoronoiFVM.jl
 [![Zulip Chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://julialang.zulipchat.com/#narrow/stream/379007-voronoifvm.2Ejl)
 
 
-Solver for coupled nonlinear partial differential equations (elliptic-parabolic conservation laws) based on the Voronoi finite volume method.
+VoronoiFVM.jl is a solver for coupled nonlinear partial differential equations (elliptic-parabolic conservation laws).
+The discretization is based on the [Voronoi finite volume method](https://j-fu.github.io/VoronoiFVM.jl/stable/method).
+VoronoiFVM.jl supports various flux laws, reaction terms and boundary conditions.
 It uses automatic differentiation via [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) and [DiffResults.jl](https://github.com/JuliaDiff/DiffResults.jl) to evaluate user functions along with their jacobians and calculate derivatives of solutions with respect to their parameters.
 
 ## JuliaCon 2024 Lightning Talk: [abstract](https://pretalx.com/juliacon2024/talk/F9FBWD/), [video](https://www.youtube.com/watch?v=v0RPD4eSzVE&t=5120s)
