@@ -27,10 +27,10 @@ Please consider a pull request if you have published work which could be added t
             title: VoronoiFVM.jl Package Ecosystem
             ---
             flowchart TB
-                grids["grids"] -->|"dispatch to"| wrappers["wrappers"]
-                pdes["<br>"] -->|"uses for meshing and assembly"| grids
-                gridvis["gridvis"] -->|"uses interface"| grids
-                pdes ---|"use for visualization"| gridvis
+                grids["grids"] ==> |"dispatch to"| wrappers["wrappers"]
+                pdes["<br>"] ==> |"uses for meshing and assembly"| grids
+                gridvis["gridvis"] ==> |"uses interface"| grids
+                pdes === |"use for visualization"| gridvis
                 subgraph grids["Grid Interface"]
                     eg["ExtendableGrids.jl"]
                     sgf["SimplexGridFactory.jl"]
@@ -44,7 +44,7 @@ Please consider a pull request if you have published work which could be added t
                 end
                 subgraph gridvis["Visualization"]
                     direction BT
-                    plotbackends["plotbackends"] -->|"do the plotting for"| gvis["GridVisualize.jl"]
+                    plotbackends["plotbackends"] ==> |"do the plotting for"| gvis["GridVisualize.jl"]
                     subgraph plotbackends
                         pvista[/"PlutoVista.jl"\]
                         glmakie[/"Makie.jl"\]
