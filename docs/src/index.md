@@ -21,6 +21,7 @@ Please consider a pull request if you have published work which could be added t
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
         <script type="module">
             import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+            mermaid.initialize({ startOnLoad: true, theme: 'dark', });
         </script>
         <div class="mermaid">
             ---
