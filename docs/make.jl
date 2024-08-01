@@ -1,5 +1,6 @@
 using Documenter, ExampleJuggler, PlutoStaticHTML, VoronoiFVM, DocumenterCitations
 using ExtendableGrids, GridVisualize, LinearAlgebra, OrdinaryDiffEq, RecursiveArrayTools, SciMLBase
+using Pkg
 
 function make(; with_examples = true,
               with_notebooks = true)
@@ -69,6 +70,7 @@ function make(; with_examples = true,
             "packages" => ["base", "ams", "autoload", "mhchem"],
         ),
     )
+    mathjax_url = extract_mathjax_url(;iframe=false)
 
     makedocs(; sitename = "VoronoiFVM.jl",
              modules = [VoronoiFVM],
@@ -81,7 +83,7 @@ function make(; with_examples = true,
              repo = "https://github.com/j-fu/VoronoiFVM.jl",
              format = Documenter.HTML(; size_threshold_ignore,
                                        assets=String["assets/citations.css"],
-                                      mathengine = MathJax3(mathjax_config,url="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js")),
+                                      mathengine = MathJax3(mathjax_config,url=mathjax_url)),
              pages)
 
     
@@ -90,6 +92,69 @@ function make(; with_examples = true,
     if !isinteractive()
         deploydocs(; repo = "github.com/j-fu/VoronoiFVM.jl.git")
     end
+end
+
+function extract_mathjax_url(;iframe=false)
+    editor_html_path = nothing
+    if iframe
+        # find source directory of transitive Pluto dependency through PlutoSliderServer
+        deps = Pkg.dependencies()
+        plutosliderserver_uuid = findfirst(x->x.name=="PlutoSliderServer", deps)
+        if isnothing(plutosliderserver_uuid)
+            @warn "Please import/use PlutoSliderServer.jl to extract Pluto notebooks with `iframe=true`"
+        else
+            # read the frontend/editor.html which contains the link to the correct MathJax source script
+            editor_html_path = get_editor_html_path(plutosliderserver_uuid,deps)
+        end        
+    else
+        # find source directory of transitive Pluto dependency through PlutoStaticHTML 
+        deps = Pkg.dependencies()
+        plutostatichtml_uuid = findfirst(x->x.name=="PlutoStaticHTML", deps)
+        if isnothing(plutostatichtml_uuid)
+            @warn "Please import/use PlutoStaticHTML.jl in order to deploy Pluto notebooks with `iframe=false`"
+        else
+            editor_html_path = get_editor_html_path(plutostatichtml_uuid,deps)
+        end
+    end
+
+    mathjax_link = read_mathjax_url_from_editor_file(editor_html_path)    
+
+    return mathjax_link
+end
+
+function get_editor_html_path(direct_dep_uuid,deps)
+    transitive_deps = deps[direct_dep_uuid].dependencies
+    pluto_uuid = transitive_deps["Pluto"]
+    pluto_pkginfo = deps[pluto_uuid]    
+    pluto_source_dir=pluto_pkginfo.source
+    editor_html_path = joinpath(pluto_source_dir,"frontend","editor.html")
+
+    return editor_html_path
+end
+
+function read_mathjax_url_from_editor_file(editor_html_path)
+    # fallback default version 3.2.2
+    mathjax_link = "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js"
+
+    if isnothing(editor_html_path)
+        @warn "Could not determine MathJax source from dependencies! Falling back to $mathjax_link ."
+        return mathjax_link
+    end
+
+    mathjax_script_regex = r"<script type=\"text/javascript\" id=\"MathJax-script\".* not-the-src-yet=\"(?<link>.+)\".*></script>"
+    m = nothing
+    for line in eachline(editor_html_path)
+        m=match(mathjax_script_regex,line)
+        isnothing(m) && continue
+        mathjax_link = m[:link]
+        break
+    end
+
+    if isnothing(m)
+        @warn "Could not determine MathJax source from dependencies! Falling back to $mathjax_link ."
+    end
+
+    return mathjax_link
 end
 
 if isinteractive()
